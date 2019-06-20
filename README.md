@@ -49,38 +49,31 @@ import pandas as pd
 
 ```python
 # code here 
+from sklearn.datasets import fetch_openml
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn import metrics
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 ```
 
 ### Download and Inspect the Dataset
 
-MNIST dataset can be downloaded with scikit-learn for experimentation. We shall use `fetch_mldata()` to import this dataset into our environment. 
+MNIST dataset can be downloaded with scikit-learn for experimentation. We shall use `fetch_openml()` to import this dataset into our environment. 
 
 ```python
 # Download the dataset
-digits = fetch_mldata('MNIST original')
+digits = fetch_openml('mnist_784')
 digits
 ```
 
 
 ```python
 # code here 
+
 ```
-
-
-
-
-    {'COL_NAMES': ['label', 'data'],
-     'DESCR': 'mldata.org dataset: mnist-original',
-     'data': array([[0, 0, 0, ..., 0, 0, 0],
-            [0, 0, 0, ..., 0, 0, 0],
-            [0, 0, 0, ..., 0, 0, 0],
-            ...,
-            [0, 0, 0, ..., 0, 0, 0],
-            [0, 0, 0, ..., 0, 0, 0],
-            [0, 0, 0, ..., 0, 0, 0]], dtype=uint8),
-     'target': array([0., 0., 0., ..., 9., 9., 9.])}
-
-
 
 The dataset contains both features (as digits.data) and target labels (as digits.target). Let's quickly check these for size. 
 
@@ -97,11 +90,8 @@ print('Target:', target.shape)
 
 ```python
 # code here 
+
 ```
-
-    Features: (70000, 784)
-    Target: (70000,)
-
 
 #### Viewing Images and labels in the dataset 
 Above we can see that data is saved as arrays of 0/1 digits, following the digitization approach we saw in the previous lesson. We can visualize these arrays as images as shown below:
@@ -130,21 +120,8 @@ print ('Label:',digits.target[-1])
 
 ```python
 # code here 
+
 ```
-
-
-![png](index_files/index_10_0.png)
-
-
-    Label: 0.0
-
-
-
-![png](index_files/index_10_2.png)
-
-
-    Label: 9
-
 
 Here we visualized the first and last image in the features dataset and pulled their labels for the target. 
 
@@ -166,10 +143,6 @@ digits.data = scaler.fit_transform(digits.data)
 # code here 
 ```
 
-    /anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:475: DataConversionWarning: Data with input dtype uint8 was converted to float64 by StandardScaler.
-      warnings.warn(msg, DataConversionWarning)
-
-
 ### PCA with 95% Variance Retention
 
 Earlier, we looked an instantiating PCA with a set number of components. We can also run a PCA while defining the required amount of variance that we expect our resulting principal components to retain. This can be passed in as a value from 0 (no variance) - 1 (100% variance). Let's try it with 95% variance retention with our data and see how many components we need.  
@@ -186,13 +159,6 @@ pca.n_components_ # Check number of components for required variance
 ```python
 # code here 
 ```
-
-
-
-
-    332
-
-
 
 So we need 332 components in total to explain 95% of variation in the data. Not a bad start. 
 
@@ -242,10 +208,6 @@ plt.show()
 # code here 
 ```
 
-
-![png](index_files/index_20_0.png)
-
-
 Above, we can see that even with such a huge reduction in the number of features, the the image is still maintaining most of its identifying characteristics. There is some noise apparent in the data as a result of this. However, we will shortly see that for classification purpose, it doesn't harm the analysis too much. 
 
 ## Simulation for Explained Variance vs. Number of components
@@ -266,13 +228,6 @@ pca.n_components_
 # code here 
 ```
 
-
-
-
-    784
-
-
-
 So the number of components here is exactly the same as number of features in the original dataset as expected. Let's calculate the total variance explained by these 784 components. 
 
 ```python
@@ -286,10 +241,6 @@ tot
 # code here 
 ```
 
-    [40.57172851 29.05682915 26.87856923 20.80096479 18.12446406]
-    719.010271575293
-
-
 We see a huge numbers here. That is because the variance is not normalized in this case. We can normalize each variance value explained by individual components and normalize it as below:
 ```python
 # Normalized explained variance
@@ -302,16 +253,6 @@ sum(var_exp)
 ```python
 # code here 
 ```
-
-    [5.6427189026198405, 4.0412258761615, 3.738273331486544, 2.892999670315867, 2.5207517581332257]
-
-
-
-
-
-    100.00000000000009
-
-
 
 This looks much better. Our values show a percentage of variance explained. Also `reverse=True` arranges these values in a descending order. Now we can calculate the cumulative variance as we add more dimensions , starting from 1 and going all the way to 784. We can use numpy's `cumsum()` to achieve this. 
 
@@ -328,10 +269,6 @@ plt.title('Cumulative Explained Variance as a Function of the Number of Componen
 ```python
 # code here 
 ```
-
-
-![png](index_files/index_29_0.png)
-
 
 Above we see a cumulative function for variance explained with respect to number of components. LEt's add a bit more information to this plot and make it more meaningful. 
 
@@ -355,10 +292,6 @@ plt.show()
 # code here 
 ```
 
-
-![png](index_files/index_31_0.png)
-
-
 This explains a lot. We need around 238 components to explain 90% of varaince. Around 150 components for 80% variance , and so on. Let's get an idea about components required for a number of variance values, so we can visually inspect how components and variance relates to the appearance of images in the dataset. 
 
 We can check tour cumulative function for any particular variance value and see how many components do we need. Let's check this for 99%, 95%, 90%, and 85% of Explained Variance
@@ -375,13 +308,6 @@ componentsVariance
 ```python
 # code here 
 ```
-
-
-
-
-    [784, 544, 332, 238, 186]
-
-
 
 ## Visualize PCA Images 
 
@@ -448,17 +374,6 @@ plt.xlabel(str(n_comp)+ ' Components')
 # code here 
 ```
 
-
-
-
-    Text(0.5,0,'186 Components')
-
-
-
-
-![png](index_files/index_38_1.png)
-
-
 Here we see what "visually" happenes to the image as we reduce the number of components. Try running above routine again and check for lower values of explained variance. Also, check for different digits randomly from the dataset. This helps you make an informed decision about the quality-speed trade off. 
 
 Visually, we may still be able to identify a 9 or any other digit. The real test here would be to pass this image data to a classifier and see how it performs. Let's try this with a simple multinomial logistic regression classifier next. 
@@ -494,13 +409,6 @@ pca.n_components_
  # code here 
 ```
 
-
-
-
-    229
-
-
-
 We can now create our transformed training and test sets for logistic regression classifier as shown below:
 
 ```python
@@ -522,16 +430,6 @@ logisticRegr.fit(X_train, y_train)
 # code here 
 ```
 
-
-
-
-    LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True,
-              intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1,
-              penalty='l2', random_state=None, solver='lbfgs', tol=0.0001,
-              verbose=0, warm_start=False)
-
-
-
 ### Make predictions and Check Performance
 
 Great, we can now try to predict the label for a given example in the test set as shown below:
@@ -545,13 +443,6 @@ logisticRegr.predict(X_test[0].reshape(1,-1)) # predict the label of first imag
 # code here 
 ```
 
-
-
-
-    array([3.])
-
-
-
 Now we can check for the actual label in our target test set. 
 ```python
 # View label from target 
@@ -562,13 +453,6 @@ y_test[0]
 ```python
 # code here 
 ```
-
-
-
-
-    3.0
-
-
 
 Similarly we can try a sequence of images and get the labels as shown below  
 ```python
@@ -581,22 +465,6 @@ list(zip(logisticRegr.predict(X_test[0:10]), y_test))
 # code here 
 ```
 
-
-
-
-    [(3.0, 3.0),
-     (3.0, 3.0),
-     (7.0, 7.0),
-     (8.0, 8.0),
-     (3.0, 3.0),
-     (7.0, 7.0),
-     (8.0, 8.0),
-     (8.0, 8.0),
-     (2.0, 2.0),
-     (1.0, 1.0)]
-
-
-
 So far so good. All predicted labels are exactly same as the ground truth. To get an over all objective assessment of this classification, we can calculate the classification score using the built in method as below:
 ```python
 # Calculate the classification score 
@@ -608,9 +476,6 @@ print(score)
 ```python
 # code here 
 ```
-
-    0.9171428571428571
-
 
 So we have 91% accuracy, with 229 components. This sounds great. We have managed to compress our data from 700+ features to just 229 components (1/3 of original data and can still achieve a high level of classification accuracy. We have run above experiments with classifiers mostly in their vanilla settings. Fine tuning and optimization techniques may help us increase this score. 
 
